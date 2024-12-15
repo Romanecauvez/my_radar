@@ -1,0 +1,15 @@
+*~
+*.o
+*.so
+*.out
+*#
+*.a
+*.sa
+*.txt
+vgcore*
+coding*
+.vscode
+my_radar
+test.c
+unit_tests*
+*copy*
