@@ -6,6 +6,7 @@
 *.a
 *.sa
 *.txt
+*.rdr
 vgcore*
 coding*
 .vscode
@@ -13,3 +14,4 @@ my_radar
 test.c
 unit_tests*
 *copy*
+script_ac_t.py

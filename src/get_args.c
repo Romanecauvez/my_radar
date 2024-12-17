@@ -5,3 +5,7 @@
 ** get_args
 */
 
+int get_args(void)
+{
+    return 0;
+}

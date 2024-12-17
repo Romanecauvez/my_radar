@@ -17,14 +17,18 @@
     #include <SFML/Window.h>
     #include <unistd.h>
     #include <stdlib.h>
+    #include <fcntl.h>
+    #include <stdio.h>
+    #include <sys/stat.h>
 
 typedef struct aircraft_s {
     sfVector2f pos;
+    sfVector2f a_pos;
+    unsigned int delay;
+    unsigned int speed;
     sfVector2f vector;
     sfSprite *sprite;
     sfRectangleShape *hitbox;
-    unsigned int delay;
-    unsigned int speed;
 } aircraft_t;
 
 typedef struct tower_s {
@@ -43,8 +47,15 @@ typedef struct corner_s {
 // int open_window(void);
 // sfCircleShape *init_circle(sfVector2f position, float radius);
 // sfCircleShape **init_circles(int nbr_circle, sfVector2f position);
+int my_strlen(char *str);
+int my_getnbr(char const *str);
+char *my_strdup(char const *src);
+char **my_str_to_word_array(char *s, char *delimiter);
 corner_t **init_corners(aircraft_t **ac, int nb_ac);
-aircraft_t **init_aircrafts_tab(sfTexture *texture, int nb_ac);
+aircraft_t **init_aircrafts_tab(sfTexture *texture, char **infos);
 void my_destroy(sfRenderWindow *window, sfCircleShape **circles);
-int open_entry_window(void);
+int my_strcmp(char const *s1, char const *s2);
+int open_window(char **array);
+int get_nb_ac(char **array);
+int get_nb_to(char **array);
 #endif

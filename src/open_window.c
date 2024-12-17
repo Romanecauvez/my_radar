@@ -6,7 +6,6 @@
 */
 
 #include "window.h"
-#include <stdio.h>
 
 void print_framerate(void)
 {
@@ -19,6 +18,7 @@ void print_framerate(void)
     }
     sfTime elapsed = sfClock_getElapsedTime(clock);
     if (sfTime_asSeconds(elapsed) >= 1) {
+        // PRINTF !!!! BANNED 
         printf("%3d FPS \n", fps);
         fflush(stdout);
         fps = 0;
@@ -81,23 +81,28 @@ void while_window_open(sfRenderWindow *win, sfEvent event,
     print_framerate();
 }
 
-int open_entry_window(void)
+int open_window(char **array)
 {
     sfRenderWindow *win = sfRenderWindow_create((sfVideoMode){1920, 1080, 32},
         "My_Radar", sfDefaultStyle, NULL);
     sfEvent event = {0};
     sfTexture *ac_texture = sfTexture_createFromFile("assets/plane.png", NULL);
-    aircraft_t **all_ac = init_aircrafts_tab(ac_texture, 2000);
-    corner_t **corners = init_corners(all_ac, 2000);
-    // #include <time.h>
-    // srand(time(0));
+    sfTexture *bg_texture = sfTexture_createFromFile("assets/bg.jpg", NULL);
+    sfSprite *bg = sfSprite_create();
+    aircraft_t **all_ac = init_aircrafts_tab(ac_texture, array);
+    corner_t **corners = init_corners(all_ac, get_nb_ac(array));
 
+    // free_array(array);
+    sfSprite_setTexture(bg, bg_texture, sfTrue);
     sfRenderWindow_setFramerateLimit(win, 60);
     while (sfRenderWindow_isOpen(win)) {
         sfRenderWindow_clear(win, sfBlack);
+        sfRenderWindow_drawSprite(win, bg, NULL);
         while_window_open(win, event, corners);
     }
-    // sfTexture_destroy(ac_texture);
+    sfTexture_destroy(ac_texture);
+    sfSprite_destroy(bg);
+    sfTexture_destroy(bg_texture);
     // my_destroy(win, corners);
     return 0;
 }
