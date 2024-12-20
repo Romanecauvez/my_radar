@@ -133,7 +133,8 @@ corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners)
             sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfYellow);
         }
     }
-    // printf("CT:%d\t", corners[0]->nb_ac + corners[1]->nb_ac + corners[2]->nb_ac + corners[3]->nb_ac);
+    // printf("CT:%d\t", corners[0]->nb_ac + corners[1]->nb_ac +
+        // corners[2]->nb_ac + corners[3]->nb_ac);
     for (int j = 0; j < 4; j++)
         corners[j]->ac[corners[j]->nb_ac] = NULL;
     return corners;
@@ -153,26 +154,22 @@ corner_t **init_corners(aircraft_t **ac, int nb_ac)
     return corners;
 }
 
-window_t *init_window(char **array, aircraft_t **all_ac)
+window_t *init_window(char **array)
 {
     window_t *w = malloc(sizeof(window_t));
     sfTexture *t_texture = sfTexture_createFromFile("assets/phare.png", NULL);
+    sfTexture *ac_texture = sfTexture_createFromFile("assets/boat.png", NULL);
+    sfTexture *bg_texture = sfTexture_createFromFile("assets/bg.jpg", NULL);
 
+    w->win = sfRenderWindow_create((sfVideoMode){1920, 1080, 32}, "My_Radar",
+        sfDefaultStyle, NULL);
+    w->bg = sfSprite_create();
+    sfSprite_setTexture(w->bg, bg_texture, sfTrue);
+    w->all_ac = init_aircrafts_tab(ac_texture, array);
     w->all_to = init_towers_tab(t_texture, array);
     w->nb_ac = get_nb_ac(array);
-    w->corners = init_corners(all_ac, w->nb_ac);
+    w->corners = init_corners(w->all_ac, w->nb_ac);
     w->state_l = sfTrue;
     w->state_s = sfTrue;
     return w;
 }
-
-// sfCircleShape **init_circles(int nbr_circle, sfVector2f position)
-// {
-//     sfCircleShape **circles = malloc(sizeof(sfCircleShape *) *
-//         nbr_circle + 1);
-
-//     for (int i = 0; i < nbr_circle; i++)
-//         circles[i] = init_circle(position, rand() % 20);
-//     circles[nbr_circle] = NULL;
-//     return circles;
-// }

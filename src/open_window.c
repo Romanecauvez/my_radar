@@ -12,11 +12,13 @@ void print_framerate(void)
     static int first = 1;
     static sfClock *clock;
     static int fps = 0;
+    sfTime elapsed = {0};
+
     if (first == 1) {
         clock = sfClock_create();
         first = 0;
     }
-    sfTime elapsed = sfClock_getElapsedTime(clock);
+    elapsed = sfClock_getElapsedTime(clock);
     if (sfTime_asSeconds(elapsed) >= 1) {
         // PRINTF !!!! BANNED
         printf("%3d FPS \n", fps);
@@ -140,31 +142,22 @@ void while_window_open(sfRenderWindow *win, sfEvent event, window_t *w, sfClock 
 
 int open_window(char **array)
 {
-    sfRenderWindow *win = sfRenderWindow_create((sfVideoMode){1920, 1080, 32},
-        "My_Radar", sfDefaultStyle, NULL);
     sfEvent event = {0};
     sfClock *clock = sfClock_create();
-    sfTexture *bg_texture = sfTexture_createFromFile("assets/bg.jpg", NULL);
-    sfSprite *bg = sfSprite_create();
-    sfTexture *ac_texture = sfTexture_createFromFile("assets/boat.png", NULL);
-    aircraft_t **all_ac = init_aircrafts_tab(ac_texture, array);
     // DONT DOUBLE LOOP FOR TOWERS
-    window_t *w = init_window(array, all_ac);
+    window_t *w = init_window(array);
 
     free_array(array);
-    sfSprite_setTexture(bg, bg_texture, sfTrue);
-    sfRenderWindow_setFramerateLimit(win, 60);
-    while (sfRenderWindow_isOpen(win)) {
-        sfRenderWindow_clear(win, sfBlack);
-        sfRenderWindow_drawSprite(win, bg, NULL);
-        while_window_open(win, event, w, clock);
+    sfRenderWindow_setFramerateLimit(w->win, 60);
+    while (sfRenderWindow_isOpen(w->win)) {
+        sfRenderWindow_clear(w->win, sfBlack);
+        sfRenderWindow_drawSprite(w->win, w->bg, NULL);
+        while_window_open(w->win, event, w, clock);
         // for (int i = 0; w->corners[i]; i++)
         //     w->corners[i]->nb_ac = 0;
         // w->corners = parse_in_corners(all_ac, w->nb_ac, w->corners);
     }
-    sfTexture_destroy(ac_texture);
-    sfSprite_destroy(bg);
-    sfTexture_destroy(bg_texture);
-    // my_destroy(win, corners);
+    sfClock_destroy(clock);
+    my_destroy(w);
     return 0;
 }
