@@ -66,8 +66,7 @@ tower_t **init_towers_tab(sfTexture *texture, char **infos);
 aircraft_t **init_aircrafts_tab(sfTexture *texture, char **infos);
 corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners);
 int open_window(char **array);
-int get_nb_ac(char **array);
-int get_nb_to(char **array);
+sfVector2i get_nb_ac_to(char **array);
 void my_destroy(window_t *w);
 
 #endif

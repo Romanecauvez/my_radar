@@ -22,7 +22,7 @@ OBJ	=	$(SRC:.c=.o)
 NAME	=	my_radar
 
 CFLAGS	=	-W -Wextra -Wall -Werror -I ./include -l csfml-graphics \
-	-l csfml-system -l csfml-window -l csfml-audio
+	-l csfml-system -l csfml-window -l csfml-audio -lm -g
 
 all:	$(NAME)
 

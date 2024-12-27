@@ -15,26 +15,46 @@ void free_array(char **array)
     free(array);
 }
 
-void my_destroy(window_t *w)
+static void my_destroy_textures(window_t *w)
 {
-    sfTexture *ac_texture = (sfTexture *)sfSprite_getTexture(w->all_ac[0]->sprite);
-    sfTexture *to_texture = (sfTexture *)sfSprite_getTexture(w->all_to[0]->sprite);
-
     sfTexture_destroy((sfTexture *)sfSprite_getTexture(w->bg));
-    sfSprite_destroy(w->bg);
+    if ((!w->all_ac || !w->all_ac[0] || !w->all_ac[0]->sprite) &&
+        (!w->all_to || !w->all_to[0] || !w->all_to[0]->sprite))
+        return;
+    if (w->all_ac[0] && w->all_ac[0]->sprite)
+        sfTexture_destroy((sfTexture *)sfSprite_getTexture(w->all_ac[0]->sprite));
+    if (w->all_to[0] && w->all_to[0]->sprite)
+        sfTexture_destroy((sfTexture *)sfSprite_getTexture(w->all_to[0]->sprite));
+}
+static void my_destroy_aircrafts(window_t *w)
+{
+    if (!w->all_ac)
+        return;
     for (int i = 0; w->all_ac[i]; i++) {
         sfRectangleShape_destroy(w->all_ac[i]->hitbox);
         sfSprite_destroy(w->all_ac[i]->sprite);
         free(w->all_ac[i]);
     }
     free(w->all_ac);
-    sfTexture_destroy(ac_texture);
+}
+
+static void my_destroy_towers(window_t *w)
+{
+    if (!w->all_to)
+        return;
     for (int i = 0; w->all_to[i]; i++) {
         sfCircleShape_destroy(w->all_to[i]->area);
         sfSprite_destroy(w->all_to[i]->sprite);
     }
     free(w->all_to);
-    sfTexture_destroy(to_texture);
+}
+
+void my_destroy(window_t *w)
+{
+    my_destroy_textures(w);
+    sfSprite_destroy(w->bg);
+    my_destroy_aircrafts(w);
+    my_destroy_towers(w);
     for (int i = 0; i < 4; i++)
         free(w->corners[i]->ac);
     free(w->corners);

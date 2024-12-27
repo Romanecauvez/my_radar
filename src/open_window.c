@@ -112,11 +112,11 @@ void ac_movement(window_t *w)
             handle_map_boundaries(w->corners[i]->ac[j]);
             // w->corners[i]->ac[j]->vector.x;
             vector_speed = (sfVector2f){((int)w->corners[i]->ac[j]->vector.x %
-                10) - 5, ((int)w->corners[i]->ac[j]->vector.y % 10) - 5};
+                5) - 2, ((int)w->corners[i]->ac[j]->vector.y % 5) - 2};
             sfRectangleShape_move(w->corners[i]->ac[j]->hitbox,
-                vector_speed);// w->corners[i]->ac[j]->vector);
+                vector_speed);// w->corners[i]->ac[j]->speed);
             sfSprite_move(w->corners[i]->ac[j]->sprite,
-                vector_speed);// w->corners[i]->ac[j]->vector);
+                vector_speed);// w->corners[i]->ac[j]->speed);
         }
     }
 }
@@ -153,9 +153,9 @@ int open_window(char **array)
         sfRenderWindow_clear(w->win, sfBlack);
         sfRenderWindow_drawSprite(w->win, w->bg, NULL);
         while_window_open(w->win, event, w, clock);
-        // for (int i = 0; w->corners[i]; i++)
-        //     w->corners[i]->nb_ac = 0;
-        // w->corners = parse_in_corners(all_ac, w->nb_ac, w->corners);
+        for (int i = 0; w->corners[i]; i++)
+            w->corners[i]->nb_ac = 0;
+        w->corners = parse_in_corners(w->all_ac, w->nb_ac, w->corners);
     }
     sfClock_destroy(clock);
     my_destroy(w);

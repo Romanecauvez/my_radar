@@ -6,6 +6,7 @@
 */
 
 #include "window.h"
+#include "math.h"
 
 static sfCircleShape *init_circle(sfVector2f position, float radius)
 {
@@ -55,25 +56,6 @@ static tower_t *init_tower(char **array, sfTexture *texture)
     return t;
 }
 
-tower_t **init_towers_tab(sfTexture *texture, char **infos)
-{
-    int nb_t = get_nb_to(infos);
-    tower_t **towers = malloc(sizeof(tower_t *) * (nb_t + 1));
-    int i = 0;
-    char **array = NULL;
-
-    for (int j = 0; infos[j]; j++) {
-        if (infos[j][0] == 'T') {
-            array = my_str_to_word_array(infos[j], "\t ");
-            towers[i] = init_tower(array, texture);
-            free_array(array);
-            i++;
-        }
-    }
-    towers[i] = NULL;
-    return towers;
-}
-
 static aircraft_t *init_aircraft(char **array, sfTexture *texture)
 {
     aircraft_t *ac = malloc(sizeof(aircraft_t));
@@ -87,32 +69,56 @@ static aircraft_t *init_aircraft(char **array, sfTexture *texture)
     ac->delay = my_getnbr(array[6]);
     ac->sprite = init_sprite(texture, ac->pos, (sfVector2f){0.07, 0.07},
         (sfVector2f){0, 0});
+    float dot_product = (ac->pos.x * ac->a_pos.x) + (ac->pos.y * ac->a_pos.y);
+    float norm_u = sqrt((ac->pos.x * ac->pos.x) + (ac->pos.y * ac->pos.y));
+    float norm_v = sqrt((ac->a_pos.x * ac->a_pos.x) + (ac->a_pos.y * ac->a_pos.y));
+    float cos_th = dot_product / (norm_u * norm_v);
+    if (cos_th < -1.0f) cos_th = -1.0f;
+    if (cos_th > 1.0f) cos_th = 1.0f;
+    float angle = acosf(cos_th) * (180.0f / 3.1416f);
+    // // Calculate the direction vector
+    // float dx = ac->a_pos.x - ac->pos.x;
+    // float dy = ac->a_pos.y - ac->pos.y;
+    // // Calculate the angle in radians using atan2, then convert to degrees
+    // float angle = atan2f(dy, dx) * (180.0f / 3.1416f);
+    // // Apply the rotation
+    // sfRectangleShape_setRotation(ac->hitbox, angle);
+    // sfSprite_setRotation(ac->sprite, angle);
+    sfRectangleShape_rotate(ac->hitbox, -angle);
+    sfSprite_rotate(ac->sprite, -angle);
     return ac;
 }
 
-aircraft_t **init_aircrafts_tab(sfTexture *texture, char **infos)
+window_t *init_ac_to_tab(sfTexture *ac_texture, sfTexture *to_texture,
+    window_t *w, char **infos)
 {
-    int nb_ac = get_nb_ac(infos);
-    aircraft_t **aircrafts = malloc(sizeof(aircraft_t *) * (nb_ac + 1));
+    sfVector2i nb_ac_to = get_nb_ac_to(infos);
     int i = 0;
+    int k = 0;
     char **array = NULL;
 
+    w->all_ac = malloc(sizeof(aircraft_t *) * (nb_ac_to.x + 1));
+    w->all_to = malloc(sizeof(tower_t *) * (nb_ac_to.y + 1));
     for (int j = 0; infos[j]; j++) {
+        array = my_str_to_word_array(infos[j], "\t ");
         if (infos[j][0] == 'A') {
-            array = my_str_to_word_array(infos[j], "\t ");
-            aircrafts[i] = init_aircraft(array, texture);
-            free_array(array);
+            w->all_ac[i] = init_aircraft(array, ac_texture);
             i++;
+        } else {
+            w->all_to[k] = init_tower(array, to_texture);
+            k++;
         }
+        free_array(array);
     }
-    aircrafts[i] = NULL;
-    return aircrafts;
+    w->all_ac[i] = NULL;
+    w->all_to[k] = NULL;
+    return w;
 }
 
 corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners)
 {
     for (int i = 0; i < nb_ac; i++) {
-        if (ac[i]->pos.x < 960 && ac[i]->pos.y < 540) {
+        if (ac[i]->pos.x <= 960 && ac[i]->pos.y <= 540) {
             corners[0]->ac[corners[0]->nb_ac] = ac[i];
             corners[0]->nb_ac++;
             sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfRed);
@@ -122,19 +128,17 @@ corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners)
             corners[1]->nb_ac++;
             sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfGreen);
         }
-        if (ac[i]->pos.x < 960 && ac[i]->pos.y > 540) {
+        if (ac[i]->pos.x <= 960 && ac[i]->pos.y > 540) {
             corners[2]->ac[corners[2]->nb_ac] = ac[i];
             corners[2]->nb_ac++;
             sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfBlue);
         }
-        if (ac[i]->pos.x > 960 && ac[i]->pos.y > 540) {
+        if (ac[i]->pos.x > 960 && ac[i]->pos.y >= 540) {
             corners[3]->ac[corners[3]->nb_ac] = ac[i];
             corners[3]->nb_ac++;
             sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfYellow);
         }
     }
-    // printf("CT:%d\t", corners[0]->nb_ac + corners[1]->nb_ac +
-        // corners[2]->nb_ac + corners[3]->nb_ac);
     for (int j = 0; j < 4; j++)
         corners[j]->ac[corners[j]->nb_ac] = NULL;
     return corners;
@@ -165,9 +169,8 @@ window_t *init_window(char **array)
         sfDefaultStyle, NULL);
     w->bg = sfSprite_create();
     sfSprite_setTexture(w->bg, bg_texture, sfTrue);
-    w->all_ac = init_aircrafts_tab(ac_texture, array);
-    w->all_to = init_towers_tab(t_texture, array);
-    w->nb_ac = get_nb_ac(array);
+    w = init_ac_to_tab(ac_texture, t_texture, w, array);
+    w->nb_ac = get_nb_ac_to(array).x;
     w->corners = init_corners(w->all_ac, w->nb_ac);
     w->state_l = sfTrue;
     w->state_s = sfTrue;
