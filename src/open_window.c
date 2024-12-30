@@ -6,47 +6,23 @@
 */
 
 #include "window.h"
+#include <math.h>
 
-void print_framerate(void)
+int is_in_area(sfVector2f vector1, tower_t *tower)
 {
-    static int first = 1;
-    static sfClock *clock;
-    static int fps = 0;
-    sfTime elapsed = {0};
+    sfVector2f vector2 = tower->pos;
+    float area_r = sfCircleShape_getRadius(tower->area);
+    float boatx = vector1.x + 20;
+    float boaty = vector1.y + 20;
+    float areax = vector2.x + area_r;
+    float areay = vector2.y + area_r;
 
-    if (first == 1) {
-        clock = sfClock_create();
-        first = 0;
+    if (((boatx - areax) * (boatx - areax)) + ((boaty - areay) * (boaty - areay)) <=
+        ((20 + area_r) * (20 + area_r))) {
+        return 1;
     }
-    elapsed = sfClock_getElapsedTime(clock);
-    if (sfTime_asSeconds(elapsed) >= 1) {
-        // PRINTF !!!! BANNED
-        printf("%3d FPS \n", fps);
-        fflush(stdout);
-        fps = 0;
-        sfClock_restart(clock);
-    } else
-        fps++;
+    return 0;
 }
-
-// int is_intersecting_circles(sfCircleShape *c1, sfCircleShape *c2)
-// {
-//     sfVector2f vector1 = sfCircleShape_getPosition(c1);
-//     sfVector2f vector2 = sfCircleShape_getPosition(c2);
-//     float C1r = sfCircleShape_getRadius(c1);
-//     float C2r = sfCircleShape_getRadius(c2);
-//     float C1x = vector1.x + C1r;
-//     float C1y = vector1.y + C1r;
-//     float C2x = vector2.x + C2r;
-//     float C2y = vector2.y + C2r;
-//     if (((C1x - C2x) * (C1x - C2x)) + ((C1y - C2y) * (C1y - C2y)) <=
-//         ((C1r + C2r) * (C1r + C2r))) {
-//         sfCircleShape_setFillColor(c1, sfWhite);
-//         sfCircleShape_setFillColor(c2, sfWhite);
-//         return 1;
-//     }
-//     return 0;
-// }
 
 static void analyse_events(sfRenderWindow *win, sfEvent *event, window_t *w)
 {
@@ -62,9 +38,6 @@ void display_boundaries(sfRenderWindow *win, window_t *w)
 {
     for (int i = 0; w->all_to[i]; i++) {
         sfRenderWindow_drawCircleShape(win, w->all_to[i]->area, NULL);
-        // for (int j = 0; all_to[j]; j++) {
-        //     // is_intersecting_circles(circles[i], circles[j]);
-        // }
     }
     for (int i = 0; w->corners[i]; i++) {
         for (int j = 0; w->corners[i]->ac[j]; j++)
@@ -72,17 +45,67 @@ void display_boundaries(sfRenderWindow *win, window_t *w)
     }
 }
 
+int ac_cmp(aircraft_t *ac1, aircraft_t *ac2)
+{
+    if (ac1->a_pos.x == ac2->a_pos.x && ac1->a_pos.y == ac2->a_pos.y &&
+        ac1->delay == ac2->delay && ac1->pos.x == ac2->pos.x &&
+        ac1->pos.y == ac2->pos.y && ac1->speed == ac2->speed)
+        return 1;
+    return 0;
+}
+
+void remove_aircraft(aircraft_t *ac, window_t *w)
+{
+    aircraft_t *last_ac = w->all_ac[w->nb_ac - 1];
+
+    for (int i = 0; w->all_ac[i]; i++) {
+        if (w->all_ac[i] == ac) {
+            w->all_ac[i] = last_ac;
+            w->nb_ac--;
+            w->all_ac[w->nb_ac] = NULL;
+        }
+    }
+    // sfRectangleShape_destroy(ac->hitbox);
+    // sfSprite_destroy(ac->sprite);
+}
+
+void is_intersecting_ac(window_t *w, int j, int i)
+{
+    sfVector2f pos1 = {0, 0};
+    sfVector2f pos2 = {0, 0};
+
+    for (int x = j + 1; w->corners[i]->ac[x]; x++) {
+        pos1 = sfRectangleShape_getPosition(w->corners[i]->ac[j]->hitbox);
+        pos2 = sfRectangleShape_getPosition(w->corners[i]->ac[x]->hitbox);
+        // for (int i = 0; w->all_to[i]; i++) {
+        //     if (is_in_area(pos1, w->all_to[i]) || is_in_area(pos2, w->all_to[i]))
+        //         return;
+        // }
+        if ((pos2.x + 10 >= pos1.x - 10 && pos2.x - 10 <= pos1.x + 10)
+            &&
+            (pos2.y + 10 >= pos1.y - 10 && pos2.y - 10 <= pos1.y + 10)) {
+            remove_aircraft(w->corners[i]->ac[j], w);
+            remove_aircraft(w->corners[i]->ac[x], w);
+        }
+    }
+}
+
+void is_arrived(window_t *w, aircraft_t *ac)
+{
+    if (ac->pos.x == ac->a_pos.x && ac->pos.y == ac->a_pos.y)
+        remove_aircraft(ac, w);
+}
+
 void display_sprites(sfRenderWindow *win, window_t *w)
 {
-    for (int i = 0; w->all_to[i]; i++) {
+    for (int i = 0; w->all_to[i]; i++)
         sfRenderWindow_drawSprite(win, w->all_to[i]->sprite, NULL);
-        // for (int j = 0; all_to[j]; j++) {
-        //     // is_intersecting_circles(circles[i], circles[j]);
-        // }
-    }
     for (int i = 0; w->corners[i]; i++) {
-        for (int j = 0; w->corners[i]->ac[j]; j++)
+        for (int j = 0; w->corners[i]->ac[j]; j++) {
             sfRenderWindow_drawSprite(win, w->corners[i]->ac[j]->sprite, NULL);
+            is_intersecting_ac(w, j, i);
+            is_arrived(w, w->corners[i]->ac[j]);
+        }
     }
 }
 
@@ -105,54 +128,113 @@ void handle_map_boundaries(aircraft_t *ac)
 
 void ac_movement(window_t *w)
 {
-    sfVector2f vector_speed = {0, 0};
-
     for (int i = 0; w->corners[i]; i++) {
         for (int j = 0; w->corners[i]->ac[j]; j++) {
             handle_map_boundaries(w->corners[i]->ac[j]);
-            // w->corners[i]->ac[j]->vector.x;
-            vector_speed = (sfVector2f){((int)w->corners[i]->ac[j]->vector.x %
-                5) - 2, ((int)w->corners[i]->ac[j]->vector.y % 5) - 2};
+            sfVector2f v = w->corners[i]->ac[j]->vector;
+            float magnitude = sqrtf(v.x * v.x + v.y * v.y);
+            // Normalize the v vector
+            sfVector2f normalized_v = {v.x / magnitude, v.y / magnitude};
+            // Scale the normalized vector by the speed
+            sfVector2f move_vector = {normalized_v.x *
+                (w->corners[i]->ac[j]->speed / 60), normalized_v.y *
+                (w->corners[i]->ac[j]->speed / 60)};
+            // vector_speed = (sfVector2f){w->corners[i]->ac[j]->speed / 60, w->corners[i]->ac[j]->speed / 60};
             sfRectangleShape_move(w->corners[i]->ac[j]->hitbox,
-                vector_speed);// w->corners[i]->ac[j]->speed);
+                move_vector);// w->corners[i]->ac[j]->speed);
             sfSprite_move(w->corners[i]->ac[j]->sprite,
-                vector_speed);// w->corners[i]->ac[j]->speed);
+                move_vector);// w->corners[i]->ac[j]->speed);
         }
     }
 }
 
-void while_window_open(sfRenderWindow *win, sfEvent event, window_t *w, sfClock *clock)
+sfText *init_text(sfVector2f position, char *text_str,
+    int size)
 {
-    sfTime time = sfClock_getElapsedTime(clock);
-    float seconds = time.microseconds / 10000.0;
+    sfText *text = sfText_create();
 
-    while (sfRenderWindow_pollEvent(win, &event))
-        analyse_events(win, &event, w);
-    if (seconds/* > 1.0*/) {
-        ac_movement(w);
-        if (w->state_l == sfTrue)
-            display_boundaries(win, w);
-        if (w->state_s == sfTrue)
-            display_sprites(win, w);
-        print_framerate();
-        sfClock_restart(clock);
+    sfText_setPosition(text, position);
+    sfText_setString(text, text_str);
+    sfText_setFont(text, sfFont_createFromFile("assets/Milanello.otf"));
+    sfText_setCharacterSize(text, size);
+    sfText_setColor(text, sfBlack);
+    return text;
+}
+
+static char *score_convert(int nbr)
+{
+    int nb_len = 0;
+    char *str = NULL;
+    int i = 0;
+
+    for (int tmp = nbr; tmp; nb_len++)
+        tmp /= 10;
+    str = malloc(sizeof(char) * nb_len + 1);
+    if (!str)
+        return NULL;
+    i = nb_len - 1;
+    for (; i >= 0; i--) {
+        str[i] = nbr % 10 + 48;
+        nbr /= 10;
     }
-    sfRenderWindow_display(win);
+    str[nb_len] = '\0';
+    return str;
+}
+
+void while_window_open(sfEvent event, window_t *w, sfClock *clock)
+{
+    static int first = 1;
+    static int fps = 0;
+    static int second = 0;
+    sfTime elapsed = {0};
+    static char *fps_str = "60";
+    static char *second_str = "0";
+    sfText *fps_seconds = NULL;
+
+    while (sfRenderWindow_pollEvent(w->win, &event))
+        analyse_events(w->win, &event, w);
+    if (first == 1) {
+        clock = sfClock_create();
+        first = 0;
+    }
+    elapsed = sfClock_getElapsedTime(clock);
+    if (w->state_l == sfTrue)
+        display_boundaries(w->win, w);
+    if (w->state_s == sfTrue)
+        display_sprites(w->win, w);
+    ac_movement(w);
+    if (sfTime_asSeconds(elapsed) >= 1) {
+        second++;
+        fps_str = score_convert(fps);
+        second_str = score_convert(second);
+        fflush(stdout);
+        fps = 0;
+        sfClock_restart(clock);
+    } else
+        fps++;
+    fps_seconds = init_text((sfVector2f){750,0}, fps_str, 40);
+    sfRenderWindow_drawText(w->win, fps_seconds, NULL);
+    sfText_destroy(fps_seconds);
+    fps_seconds = init_text((sfVector2f){920,0}, second_str, 40);
+    sfRenderWindow_drawText(w->win, fps_seconds, NULL);
+    sfText_destroy(fps_seconds);
+    sfRenderWindow_display(w->win);
 }
 
 int open_window(char **array)
 {
     sfEvent event = {0};
     sfClock *clock = sfClock_create();
-    // DONT DOUBLE LOOP FOR TOWERS
     window_t *w = init_window(array);
+    sfText *text = init_text((sfVector2f){820, 0}, "FPS,\t\tSecond(s)", 40);
 
     free_array(array);
     sfRenderWindow_setFramerateLimit(w->win, 60);
     while (sfRenderWindow_isOpen(w->win)) {
         sfRenderWindow_clear(w->win, sfBlack);
         sfRenderWindow_drawSprite(w->win, w->bg, NULL);
-        while_window_open(w->win, event, w, clock);
+        sfRenderWindow_drawText(w->win, text, NULL);
+        while_window_open(event, w, clock);
         for (int i = 0; w->corners[i]; i++)
             w->corners[i]->nb_ac = 0;
         w->corners = parse_in_corners(w->all_ac, w->nb_ac, w->corners);

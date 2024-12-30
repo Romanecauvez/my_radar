@@ -27,7 +27,7 @@ static sfRectangleShape *init_hitbox(sfVector2f position)
 
     sfRectangleShape_setPosition(hitbox, position);
     sfRectangleShape_setSize(hitbox, (sfVector2f){20, 20});
-    // sfRectangleShape_setOutlineColor(hitbox, sfGreen);
+    sfRectangleShape_setOutlineColor(hitbox, sfGreen);
     sfRectangleShape_setOutlineThickness(hitbox, 1);
     sfRectangleShape_setFillColor(hitbox, sfTransparent);
     return hitbox;
@@ -69,13 +69,14 @@ static aircraft_t *init_aircraft(char **array, sfTexture *texture)
     ac->delay = my_getnbr(array[6]);
     ac->sprite = init_sprite(texture, ac->pos, (sfVector2f){0.07, 0.07},
         (sfVector2f){0, 0});
-    float dot_product = (ac->pos.x * ac->a_pos.x) + (ac->pos.y * ac->a_pos.y);
-    float norm_u = sqrt((ac->pos.x * ac->pos.x) + (ac->pos.y * ac->pos.y));
-    float norm_v = sqrt((ac->a_pos.x * ac->a_pos.x) + (ac->a_pos.y * ac->a_pos.y));
-    float cos_th = dot_product / (norm_u * norm_v);
-    if (cos_th < -1.0f) cos_th = -1.0f;
-    if (cos_th > 1.0f) cos_th = 1.0f;
-    float angle = acosf(cos_th) * (180.0f / 3.1416f);
+    // float dot_product = (ac->pos.x * ac->a_pos.x) + (ac->pos.y * ac->a_pos.y);
+    // float norm_u = sqrt((ac->pos.x * ac->pos.x) + (ac->pos.y * ac->pos.y));
+    // float norm_v = sqrt((ac->a_pos.x * ac->a_pos.x) + (ac->a_pos.y * ac->a_pos.y));
+    // float cos_th = dot_product / (norm_u * norm_v);
+    // if (cos_th < -1.0f) cos_th = -1.0f;
+    // if (cos_th > 1.0f) cos_th = 1.0f;
+    // float angle = acosf(cos_th) * (180.0f / 3.1416f);
+    //
     // // Calculate the direction vector
     // float dx = ac->a_pos.x - ac->pos.x;
     // float dy = ac->a_pos.y - ac->pos.y;
@@ -84,8 +85,8 @@ static aircraft_t *init_aircraft(char **array, sfTexture *texture)
     // // Apply the rotation
     // sfRectangleShape_setRotation(ac->hitbox, angle);
     // sfSprite_setRotation(ac->sprite, angle);
-    sfRectangleShape_rotate(ac->hitbox, -angle);
-    sfSprite_rotate(ac->sprite, -angle);
+    // sfRectangleShape_rotate(ac->hitbox, angle);
+    // sfSprite_rotate(ac->sprite, angle);
     return ac;
 }
 
@@ -104,7 +105,8 @@ window_t *init_ac_to_tab(sfTexture *ac_texture, sfTexture *to_texture,
         if (infos[j][0] == 'A') {
             w->all_ac[i] = init_aircraft(array, ac_texture);
             i++;
-        } else {
+        }
+        if (infos[j][0] == 'T') {
             w->all_to[k] = init_tower(array, to_texture);
             k++;
         }
@@ -121,22 +123,18 @@ corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners)
         if (ac[i]->pos.x <= 960 && ac[i]->pos.y <= 540) {
             corners[0]->ac[corners[0]->nb_ac] = ac[i];
             corners[0]->nb_ac++;
-            sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfRed);
         }
         if (ac[i]->pos.x > 960 && ac[i]->pos.y < 540) {
             corners[1]->ac[corners[1]->nb_ac] = ac[i];
             corners[1]->nb_ac++;
-            sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfGreen);
         }
         if (ac[i]->pos.x <= 960 && ac[i]->pos.y > 540) {
             corners[2]->ac[corners[2]->nb_ac] = ac[i];
             corners[2]->nb_ac++;
-            sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfBlue);
         }
         if (ac[i]->pos.x > 960 && ac[i]->pos.y >= 540) {
             corners[3]->ac[corners[3]->nb_ac] = ac[i];
             corners[3]->nb_ac++;
-            sfRectangleShape_setOutlineColor(ac[i]->hitbox, sfYellow);
         }
     }
     for (int j = 0; j < 4; j++)
