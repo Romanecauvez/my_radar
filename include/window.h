@@ -52,6 +52,8 @@ typedef struct window_s
     unsigned int nb_ac;
     sfBool state_s;
     sfBool state_l;
+    sfText *seconds;
+    sfText *fps;
 } window_t;
 
 int my_strlen(char *str);
@@ -61,6 +63,7 @@ char *my_strdup(char const *src);
 int my_strcmp(char const *s1, char const *s2);
 char **my_str_to_word_array(char *s, char *delimiter);
 window_t *init_window(char **array);
+sfText *init_text(sfVector2f position, int size);
 corner_t **init_corners(aircraft_t **ac, int nb_ac);
 tower_t **init_towers_tab(sfTexture *texture, char **infos);
 aircraft_t **init_aircrafts_tab(sfTexture *texture, char **infos);

@@ -22,7 +22,7 @@ OBJ	=	$(SRC:.c=.o)
 NAME	=	my_radar
 
 CFLAGS	=	-W -Wextra -Wall -Werror -I ./include -l csfml-graphics \
-	-l csfml-system -l csfml-window -l csfml-audio -lm -g
+	-l csfml-system -l csfml-window -l csfml-audio -lm
 
 all:	$(NAME)
 
@@ -32,8 +32,8 @@ $(NAME):	$(OBJ)
 debug:	$(NAME) $(OBJ)
 	gcc -o $(NAME) $(OBJ) $(CFLAGS) -g
 
-exec_debug: #debug
-	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) test.rdr 2>vgcore.out
+exec_debug: debug
+	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) lot_of_ac.rdr 2>vgcore.out
 
 clean:
 	rm -f $(OBJ)

@@ -156,6 +156,17 @@ corner_t **init_corners(aircraft_t **ac, int nb_ac)
     return corners;
 }
 
+sfText *init_text(sfVector2f position, int size)
+{
+    sfText *text = sfText_create();
+
+    sfText_setPosition(text, position);
+    sfText_setFont(text, sfFont_createFromFile("assets/Milanello.otf"));
+    sfText_setCharacterSize(text, size);
+    sfText_setColor(text, sfBlack);
+    return text;
+}
+
 window_t *init_window(char **array)
 {
     window_t *w = malloc(sizeof(window_t));
@@ -172,5 +183,7 @@ window_t *init_window(char **array)
     w->corners = init_corners(w->all_ac, w->nb_ac);
     w->state_l = sfTrue;
     w->state_s = sfTrue;
+    w->fps = init_text((sfVector2f){750,0}, 40);
+    w->seconds = init_text((sfVector2f){920,0}, 40);
     return w;
 }

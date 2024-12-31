@@ -8,17 +8,14 @@
 #include "window.h"
 #include <math.h>
 
-int is_in_area(sfVector2f vector1, tower_t *tower)
+int is_in_area(sfVector2f pos_ac, tower_t *tower)
 {
-    sfVector2f vector2 = tower->pos;
+    sfVector2f pos_to = tower->pos;
     float area_r = sfCircleShape_getRadius(tower->area);
-    float boatx = vector1.x + 20;
-    float boaty = vector1.y + 20;
-    float areax = vector2.x + area_r;
-    float areay = vector2.y + area_r;
 
-    if (((boatx - areax) * (boatx - areax)) + ((boaty - areay) * (boaty - areay)) <=
-        ((20 + area_r) * (20 + area_r))) {
+    if (((pos_ac.x - pos_to.x) * (pos_ac.x - pos_to.x)) +
+        ((pos_ac.y - pos_to.y) * (pos_ac.y - pos_to.y)) <=
+        ((area_r) * (area_r))) {
         return 1;
     }
     return 0;
@@ -56,8 +53,11 @@ int ac_cmp(aircraft_t *ac1, aircraft_t *ac2)
 
 void remove_aircraft(aircraft_t *ac, window_t *w)
 {
-    aircraft_t *last_ac = w->all_ac[w->nb_ac - 1];
+    aircraft_t *last_ac = NULL;
 
+    if (w->nb_ac == 0)
+        return;
+    last_ac = w->all_ac[w->nb_ac - 1];
     for (int i = 0; w->all_ac[i]; i++) {
         if (w->all_ac[i] == ac) {
             w->all_ac[i] = last_ac;
@@ -65,8 +65,6 @@ void remove_aircraft(aircraft_t *ac, window_t *w)
             w->all_ac[w->nb_ac] = NULL;
         }
     }
-    // sfRectangleShape_destroy(ac->hitbox);
-    // sfSprite_destroy(ac->sprite);
 }
 
 void is_intersecting_ac(window_t *w, int j, int i)
@@ -77,10 +75,10 @@ void is_intersecting_ac(window_t *w, int j, int i)
     for (int x = j + 1; w->corners[i]->ac[x]; x++) {
         pos1 = sfRectangleShape_getPosition(w->corners[i]->ac[j]->hitbox);
         pos2 = sfRectangleShape_getPosition(w->corners[i]->ac[x]->hitbox);
-        // for (int i = 0; w->all_to[i]; i++) {
-        //     if (is_in_area(pos1, w->all_to[i]) || is_in_area(pos2, w->all_to[i]))
-        //         return;
-        // }
+        for (int i = 0; w->all_to[i]; i++) {
+            if (is_in_area(pos1, w->all_to[i]) == 1 && is_in_area(pos2, w->all_to[i]) == 1)
+                return;
+        }
         if ((pos2.x + 10 >= pos1.x - 10 && pos2.x - 10 <= pos1.x + 10)
             &&
             (pos2.y + 10 >= pos1.y - 10 && pos2.y - 10 <= pos1.y + 10)) {
@@ -92,8 +90,12 @@ void is_intersecting_ac(window_t *w, int j, int i)
 
 void is_arrived(window_t *w, aircraft_t *ac)
 {
-    if (ac->pos.x == ac->a_pos.x && ac->pos.y == ac->a_pos.y)
+    // if ((ac->a_pos.x >= old_pos.x && ac->a_pos.x <= ac->pos.x) && (ac->a_pos.y >= old_pos.y && ac->a_pos.y <= ac->pos.y)) {
+    if ((int)ac->a_pos.x == (int)ac->pos.x && (int)ac->a_pos.y == (int)ac->pos.y) {
+        // printf("x : %f, y : %f\n", ac->pos.x, ac->pos.y);
+        // printf("a_x : %f, a_y : %f\n", ac->a_pos.x, ac->a_pos.y);
         remove_aircraft(ac, w);
+    }
 }
 
 void display_sprites(sfRenderWindow *win, window_t *w)
@@ -128,37 +130,24 @@ void handle_map_boundaries(aircraft_t *ac)
 
 void ac_movement(window_t *w)
 {
+    sfVector2f v = {0, 0};
+    float magnitude = 0.0;
+    sfVector2f normalized_v = {0, 0};
+    sfVector2f move_vector = {0, 0};
+
     for (int i = 0; w->corners[i]; i++) {
         for (int j = 0; w->corners[i]->ac[j]; j++) {
             handle_map_boundaries(w->corners[i]->ac[j]);
-            sfVector2f v = w->corners[i]->ac[j]->vector;
-            float magnitude = sqrtf(v.x * v.x + v.y * v.y);
-            // Normalize the v vector
-            sfVector2f normalized_v = {v.x / magnitude, v.y / magnitude};
-            // Scale the normalized vector by the speed
-            sfVector2f move_vector = {normalized_v.x *
-                (w->corners[i]->ac[j]->speed / 60), normalized_v.y *
-                (w->corners[i]->ac[j]->speed / 60)};
-            // vector_speed = (sfVector2f){w->corners[i]->ac[j]->speed / 60, w->corners[i]->ac[j]->speed / 60};
-            sfRectangleShape_move(w->corners[i]->ac[j]->hitbox,
-                move_vector);// w->corners[i]->ac[j]->speed);
-            sfSprite_move(w->corners[i]->ac[j]->sprite,
-                move_vector);// w->corners[i]->ac[j]->speed);
+            v = w->corners[i]->ac[j]->vector;
+            magnitude = sqrtf(v.x * v.x + v.y * v.y);
+            normalized_v = (sfVector2f){v.x / magnitude, v.y / magnitude};
+            move_vector = (sfVector2f){normalized_v.x *
+                (w->corners[i]->ac[j]->speed / 60.0f), normalized_v.y *
+                (w->corners[i]->ac[j]->speed / 60.0f)};
+            sfRectangleShape_move(w->corners[i]->ac[j]->hitbox, move_vector);
+            sfSprite_move(w->corners[i]->ac[j]->sprite, move_vector);
         }
     }
-}
-
-sfText *init_text(sfVector2f position, char *text_str,
-    int size)
-{
-    sfText *text = sfText_create();
-
-    sfText_setPosition(text, position);
-    sfText_setString(text, text_str);
-    sfText_setFont(text, sfFont_createFromFile("assets/Milanello.otf"));
-    sfText_setCharacterSize(text, size);
-    sfText_setColor(text, sfBlack);
-    return text;
 }
 
 static char *score_convert(int nbr)
@@ -187,9 +176,9 @@ void while_window_open(sfEvent event, window_t *w, sfClock *clock)
     static int fps = 0;
     static int second = 0;
     sfTime elapsed = {0};
-    static char *fps_str = "60";
+    static char *fps_str = "0";
     static char *second_str = "0";
-    sfText *fps_seconds = NULL;
+    static int is_malloc = 0;
 
     while (sfRenderWindow_pollEvent(w->win, &event))
         analyse_events(w->win, &event, w);
@@ -204,20 +193,24 @@ void while_window_open(sfEvent event, window_t *w, sfClock *clock)
         display_sprites(w->win, w);
     ac_movement(w);
     if (sfTime_asSeconds(elapsed) >= 1) {
+        if (is_malloc == 1) {
+            free(fps_str);
+            free(second_str);
+            is_malloc = 0;
+        }
         second++;
         fps_str = score_convert(fps);
         second_str = score_convert(second);
+        is_malloc = 1;
         fflush(stdout);
         fps = 0;
         sfClock_restart(clock);
     } else
         fps++;
-    fps_seconds = init_text((sfVector2f){750,0}, fps_str, 40);
-    sfRenderWindow_drawText(w->win, fps_seconds, NULL);
-    sfText_destroy(fps_seconds);
-    fps_seconds = init_text((sfVector2f){920,0}, second_str, 40);
-    sfRenderWindow_drawText(w->win, fps_seconds, NULL);
-    sfText_destroy(fps_seconds);
+    sfText_setString(w->fps, fps_str);
+    sfRenderWindow_drawText(w->win, w->fps, NULL);
+    sfText_setString(w->seconds, second_str);
+    sfRenderWindow_drawText(w->win, w->seconds, NULL);
     sfRenderWindow_display(w->win);
 }
 
@@ -226,8 +219,9 @@ int open_window(char **array)
     sfEvent event = {0};
     sfClock *clock = sfClock_create();
     window_t *w = init_window(array);
-    sfText *text = init_text((sfVector2f){820, 0}, "FPS,\t\tSecond(s)", 40);
+    sfText *text = init_text((sfVector2f){820, 0}, 40);
 
+    sfText_setString(text, "FPS,\t\tSecond(s)");
     free_array(array);
     sfRenderWindow_setFramerateLimit(w->win, 60);
     while (sfRenderWindow_isOpen(w->win)) {
