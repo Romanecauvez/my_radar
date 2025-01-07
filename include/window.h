@@ -19,6 +19,7 @@
     #include <stdlib.h>
     #include <fcntl.h>
     #include <stdio.h>
+    #include <math.h>
     #include <sys/stat.h>
 
 typedef struct aircraft_s {
@@ -42,8 +43,7 @@ typedef struct corner_s {
     aircraft_t **ac;
 } corner_t;
 
-typedef struct window_s
-{
+typedef struct window_s {
     corner_t **corners;
     tower_t **all_to;
     aircraft_t **all_ac;
@@ -62,14 +62,20 @@ int my_getnbr(char const *str);
 char *my_strdup(char const *src);
 int my_strcmp(char const *s1, char const *s2);
 char **my_str_to_word_array(char *s, char *delimiter);
-window_t *init_window(char **array);
-sfText *init_text(sfVector2f position, int size);
-corner_t **init_corners(aircraft_t **ac, int nb_ac);
-tower_t **init_towers_tab(sfTexture *texture, char **infos);
-aircraft_t **init_aircrafts_tab(sfTexture *texture, char **infos);
-corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners);
 int open_window(char **array);
 sfVector2i get_nb_ac_to(char **array);
+window_t *init_window(char **array);
+sfText *init_text(sfVector2f position, int size);
+tower_t *init_tower(char **array, sfTexture *texture);
+aircraft_t *init_aircraft(char **array, sfTexture *texture);
+void parse_ac_to_infos(char **infos, window_t *w, sfTexture *ac_texture,
+    sfTexture *to_texture);
+corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners);
+int ac_cmp(aircraft_t *ac1, aircraft_t *ac2);
+void is_arrived(window_t *w, aircraft_t *ac);
+void is_intersecting_ac(window_t *w, int j, int i);
+void display_sprites(window_t *w);
+void display_boundaries(window_t *w);
 void my_destroy(window_t *w);
 
 #endif

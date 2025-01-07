@@ -6,7 +6,6 @@
 */
 
 #include "window.h"
-#include "math.h"
 
 static sfCircleShape *init_circle(sfVector2f position, float radius)
 {
@@ -33,8 +32,8 @@ static sfRectangleShape *init_hitbox(sfVector2f position)
     return hitbox;
 }
 
-sfSprite *init_sprite(sfTexture *texture, sfVector2f pos, sfVector2f scale,
-    sfVector2f origin)
+static sfSprite *init_sprite(sfTexture *texture, sfVector2f pos,
+    sfVector2f scale, sfVector2f origin)
 {
     sfSprite *sprite = sfSprite_create();
 
@@ -45,7 +44,7 @@ sfSprite *init_sprite(sfTexture *texture, sfVector2f pos, sfVector2f scale,
     return sprite;
 }
 
-static tower_t *init_tower(char **array, sfTexture *texture)
+tower_t *init_tower(char **array, sfTexture *texture)
 {
     tower_t *t = malloc(sizeof(tower_t));
 
@@ -56,7 +55,7 @@ static tower_t *init_tower(char **array, sfTexture *texture)
     return t;
 }
 
-static aircraft_t *init_aircraft(char **array, sfTexture *texture)
+aircraft_t *init_aircraft(char **array, sfTexture *texture)
 {
     aircraft_t *ac = malloc(sizeof(aircraft_t));
 
@@ -69,80 +68,25 @@ static aircraft_t *init_aircraft(char **array, sfTexture *texture)
     ac->delay = my_getnbr(array[6]);
     ac->sprite = init_sprite(texture, ac->pos, (sfVector2f){0.07, 0.07},
         (sfVector2f){0, 0});
-    // float dot_product = (ac->pos.x * ac->a_pos.x) + (ac->pos.y * ac->a_pos.y);
-    // float norm_u = sqrt((ac->pos.x * ac->pos.x) + (ac->pos.y * ac->pos.y));
-    // float norm_v = sqrt((ac->a_pos.x * ac->a_pos.x) + (ac->a_pos.y * ac->a_pos.y));
-    // float cos_th = dot_product / (norm_u * norm_v);
-    // if (cos_th < -1.0f) cos_th = -1.0f;
-    // if (cos_th > 1.0f) cos_th = 1.0f;
-    // float angle = acosf(cos_th) * (180.0f / 3.1416f);
-    //
-    // // Calculate the direction vector
-    // float dx = ac->a_pos.x - ac->pos.x;
-    // float dy = ac->a_pos.y - ac->pos.y;
-    // // Calculate the angle in radians using atan2, then convert to degrees
-    // float angle = atan2f(dy, dx) * (180.0f / 3.1416f);
-    // // Apply the rotation
-    // sfRectangleShape_setRotation(ac->hitbox, angle);
-    // sfSprite_setRotation(ac->sprite, angle);
-    // sfRectangleShape_rotate(ac->hitbox, angle);
-    // sfSprite_rotate(ac->sprite, angle);
+    sfSprite_setRotation(ac->sprite,
+        atan2(ac->vector.y, ac->vector.x) * 180 / 3.14);
+    sfRectangleShape_setRotation(ac->hitbox,
+        atan2(ac->vector.y, ac->vector.x) * 180 / 3.14);
     return ac;
 }
 
-window_t *init_ac_to_tab(sfTexture *ac_texture, sfTexture *to_texture,
+static window_t *init_ac_to_tab(sfTexture *ac_texture, sfTexture *to_texture,
     window_t *w, char **infos)
 {
     sfVector2i nb_ac_to = get_nb_ac_to(infos);
-    int i = 0;
-    int k = 0;
-    char **array = NULL;
 
     w->all_ac = malloc(sizeof(aircraft_t *) * (nb_ac_to.x + 1));
     w->all_to = malloc(sizeof(tower_t *) * (nb_ac_to.y + 1));
-    for (int j = 0; infos[j]; j++) {
-        array = my_str_to_word_array(infos[j], "\t ");
-        if (infos[j][0] == 'A') {
-            w->all_ac[i] = init_aircraft(array, ac_texture);
-            i++;
-        }
-        if (infos[j][0] == 'T') {
-            w->all_to[k] = init_tower(array, to_texture);
-            k++;
-        }
-        free_array(array);
-    }
-    w->all_ac[i] = NULL;
-    w->all_to[k] = NULL;
+    parse_ac_to_infos(infos, w, ac_texture, to_texture);
     return w;
 }
 
-corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners)
-{
-    for (int i = 0; i < nb_ac; i++) {
-        if (ac[i]->pos.x <= 960 && ac[i]->pos.y <= 540) {
-            corners[0]->ac[corners[0]->nb_ac] = ac[i];
-            corners[0]->nb_ac++;
-        }
-        if (ac[i]->pos.x > 960 && ac[i]->pos.y < 540) {
-            corners[1]->ac[corners[1]->nb_ac] = ac[i];
-            corners[1]->nb_ac++;
-        }
-        if (ac[i]->pos.x <= 960 && ac[i]->pos.y > 540) {
-            corners[2]->ac[corners[2]->nb_ac] = ac[i];
-            corners[2]->nb_ac++;
-        }
-        if (ac[i]->pos.x > 960 && ac[i]->pos.y >= 540) {
-            corners[3]->ac[corners[3]->nb_ac] = ac[i];
-            corners[3]->nb_ac++;
-        }
-    }
-    for (int j = 0; j < 4; j++)
-        corners[j]->ac[corners[j]->nb_ac] = NULL;
-    return corners;
-}
-
-corner_t **init_corners(aircraft_t **ac, int nb_ac)
+static corner_t **init_corners(int nb_ac)
 {
     corner_t **corners = malloc((sizeof(corner_t *) * 4) + sizeof(NULL));
 
@@ -151,7 +95,6 @@ corner_t **init_corners(aircraft_t **ac, int nb_ac)
         corners[i]->ac = malloc(sizeof(aircraft_t *) * nb_ac + sizeof(NULL));
         corners[i]->nb_ac = 0;
     }
-    corners = parse_in_corners(ac, nb_ac, corners);
     corners[4] = NULL;
     return corners;
 }
@@ -180,10 +123,10 @@ window_t *init_window(char **array)
     sfSprite_setTexture(w->bg, bg_texture, sfTrue);
     w = init_ac_to_tab(ac_texture, t_texture, w, array);
     w->nb_ac = get_nb_ac_to(array).x;
-    w->corners = init_corners(w->all_ac, w->nb_ac);
+    w->corners = init_corners(w->nb_ac);
     w->state_l = sfTrue;
     w->state_s = sfTrue;
-    w->fps = init_text((sfVector2f){750,0}, 40);
-    w->seconds = init_text((sfVector2f){920,0}, 40);
+    w->fps = init_text((sfVector2f){1480, 0}, 40);
+    w->seconds = init_text((sfVector2f){1650, 0}, 40);
     return w;
 }

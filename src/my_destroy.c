@@ -5,7 +5,6 @@
 ** my_destroy.c
 */
 
-#include <SFML/Graphics.h>
 #include "window.h"
 
 void free_array(char **array)
@@ -22,10 +21,13 @@ static void my_destroy_textures(window_t *w)
         (!w->all_to || !w->all_to[0] || !w->all_to[0]->sprite))
         return;
     if (w->all_ac[0] && w->all_ac[0]->sprite)
-        sfTexture_destroy((sfTexture *)sfSprite_getTexture(w->all_ac[0]->sprite));
+        sfTexture_destroy((sfTexture *)
+            sfSprite_getTexture(w->all_ac[0]->sprite));
     if (w->all_to[0] && w->all_to[0]->sprite)
-        sfTexture_destroy((sfTexture *)sfSprite_getTexture(w->all_to[0]->sprite));
+        sfTexture_destroy((sfTexture *)
+            sfSprite_getTexture(w->all_to[0]->sprite));
 }
+
 static void my_destroy_aircrafts(window_t *w)
 {
     if (!w->all_ac)

@@ -15,7 +15,11 @@ SRC	=	src/main.c			\
 		src/get_args.c	\
 		src/my_strdup.c	\
 		src/my_strlen.c	\
-		src/my_strcmp.c
+		src/my_strcmp.c	\
+		src/crash_destination_handeling.c	\
+		src/parsing.c	\
+		src/cmp.c	\
+		src/displays.c
 
 OBJ	=	$(SRC:.c=.o)
 
@@ -33,7 +37,8 @@ debug:	$(NAME) $(OBJ)
 	gcc -o $(NAME) $(OBJ) $(CFLAGS) -g
 
 exec_debug: debug
-	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) lot_of_ac.rdr 2>vgcore.out
+	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all \
+		./$(NAME) lot_of_ac.rdr 2>vgcore.out
 
 clean:
 	rm -f $(OBJ)
