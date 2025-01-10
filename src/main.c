@@ -7,15 +7,6 @@
 
 #include "window.h"
 
-//aircrafts MUST move depending on the time AND NOT on the perfs
-//config error handling
-//program stop once no more aircraft
-//Aircrafts should be able to take off after a given delay.
-//opt:
-//Control towers’ areas could cross any side of the screen and affect
-//the opposite one.
-//press esc to pause
-
 int print_h(void)
 {
     write(1, "\tSea traffic simulation panel\n", 30);
