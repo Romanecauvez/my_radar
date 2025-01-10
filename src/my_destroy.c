@@ -7,11 +7,12 @@
 
 #include "window.h"
 
-void free_array(char **array)
+int free_array(char **array)
 {
     for (int i = 0; array[i]; i++)
         free(array[i]);
     free(array);
+    return 0;
 }
 
 static void my_destroy_textures(window_t *w)
@@ -51,7 +52,7 @@ static void my_destroy_towers(window_t *w)
     free(w->all_to);
 }
 
-void my_destroy(window_t *w)
+int my_destroy(window_t *w)
 {
     my_destroy_textures(w);
     sfSprite_destroy(w->bg);
@@ -61,4 +62,5 @@ void my_destroy(window_t *w)
         free(w->corners[i]->ac);
     free(w->corners);
     sfRenderWindow_destroy(w->win);
+    return 0;
 }

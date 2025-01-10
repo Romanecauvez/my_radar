@@ -23,11 +23,8 @@ void display_sprites(window_t *w)
     for (int i = 0; w->all_to[i]; i++)
         sfRenderWindow_drawSprite(w->win, w->all_to[i]->sprite, NULL);
     for (int i = 0; w->corners[i]; i++) {
-        for (int j = 0; w->corners[i]->ac[j]; j++) {
+        for (int j = 0; w->corners[i]->ac[j]; j++)
             sfRenderWindow_drawSprite(w->win,
                 w->corners[i]->ac[j]->sprite, NULL);
-            is_intersecting_ac(w, j, i);
-            is_arrived(w, w->corners[i]->ac[j]);
-        }
     }
 }

@@ -33,10 +33,12 @@ void parse_ac_to_infos(char **infos, window_t *w, sfTexture *ac_texture,
 static void parse_top_corners(aircraft_t *ac, corner_t **corners)
 {
     if (ac->pos.x <= 960 && ac->pos.y <= 540) {
+        sfRectangleShape_setOutlineColor(ac->hitbox, sfRed);
         corners[0]->ac[corners[0]->nb_ac] = ac;
         corners[0]->nb_ac++;
     }
     if (ac->pos.x > 960 && ac->pos.y < 540) {
+        sfRectangleShape_setOutlineColor(ac->hitbox, sfGreen);
         corners[1]->ac[corners[1]->nb_ac] = ac;
         corners[1]->nb_ac++;
     }
@@ -45,10 +47,12 @@ static void parse_top_corners(aircraft_t *ac, corner_t **corners)
 static void parse_bot_corners(aircraft_t *ac, corner_t **corners)
 {
     if (ac->pos.x <= 960 && ac->pos.y > 540) {
+        sfRectangleShape_setOutlineColor(ac->hitbox, sfBlue);
         corners[2]->ac[corners[2]->nb_ac] = ac;
         corners[2]->nb_ac++;
     }
     if (ac->pos.x > 960 && ac->pos.y >= 540) {
+        sfRectangleShape_setOutlineColor(ac->hitbox, sfYellow);
         corners[3]->ac[corners[3]->nb_ac] = ac;
         corners[3]->nb_ac++;
     }

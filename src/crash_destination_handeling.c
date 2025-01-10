@@ -25,8 +25,10 @@ static void remove_aircraft(aircraft_t *ac, window_t *w)
 
 void is_arrived(window_t *w, aircraft_t *ac)
 {
-    if ((int)ac->a_pos.x == (int)ac->pos.x &&
-        (int)ac->a_pos.y == (int)ac->pos.y) {
+    if ((ac->a_pos.x >= ac->pos.x + ac->speed &&
+        ac->a_pos.x <= ac->pos.x - ac->speed) &&
+        (ac->a_pos.y >= ac->pos.y + ac->speed &&
+        ac->a_pos.y <= ac->pos.y - ac->speed)) {
         remove_aircraft(ac, w);
     }
 }
@@ -64,13 +66,10 @@ void is_intersecting_ac(window_t *w, int j, int i)
         pos2 = w->corners[i]->ac[x]->pos;
         if (is_in_any_area(w->all_to, pos1, pos2) == 1)
             return;
-        if ((pos1.x - pos2.x) * (pos1.x - pos2.x) +
-            (pos1.y - pos2.y) * (pos1.y - pos2.y) <= 1600) {
+        if ((pos2.x + 10 >= pos1.x - 10 && pos2.x - 10 <= pos1.x + 10) &&
+            (pos2.y + 10 >= pos1.y - 10 && pos2.y - 10 <= pos1.y + 10)) {
             remove_aircraft(w->corners[i]->ac[j], w);
             remove_aircraft(w->corners[i]->ac[x], w);
         }
     }
 }
-// if ((ac->a_pos.x >= old_pos.x && ac->a_pos.x <= ac->pos.x) && (ac->a_pos.y >= old_pos.y && ac->a_pos.y <= ac->pos.y)) {
-// printf("x : %f, y : %f\n", ac->pos.x, ac->pos.y);
-// printf("a_x : %f, a_y : %f\n", ac->a_pos.x, ac->a_pos.y);

@@ -6,19 +6,20 @@
 ##
 
 SRC	=	src/main.c			\
-		src/open_window.c	\
 		src/my_destroy.c	\
-		src/init.c	\
-		src/get_nb_towers_ac.c	\
-		src/my_str_to_word_array.c	\
+		src/my_arraylen.c	\
+		src/open_window.c	\
+		src/my_str_isnum.c	\
 		src/my_getnbr.c	\
 		src/get_args.c	\
 		src/my_strdup.c	\
 		src/my_strlen.c	\
 		src/my_strcmp.c	\
-		src/crash_destination_handeling.c	\
-		src/parsing.c	\
+		src/init.c	\
 		src/cmp.c	\
+		src/get_nb_towers_ac.c	\
+		src/my_str_to_word_array.c	\
+		src/crash_destination_handeling.c	\
 		src/displays.c
 
 OBJ	=	$(SRC:.c=.o)
@@ -31,10 +32,13 @@ CFLAGS	=	-W -Wextra -Wall -Werror -I ./include -l csfml-graphics \
 all:	$(NAME)
 
 $(NAME):	$(OBJ)
-	gcc -o $(NAME) $(OBJ) $(CFLAGS)
+	gcc src/parsing.c -o $(NAME) $(OBJ) $(CFLAGS)
+
+bonus:	$(NAME) $(OBJ)
+	gcc bonus/parse_bonus.c -o $(NAME) $(OBJ) $(CFLAGS)
 
 debug:	$(NAME) $(OBJ)
-	gcc -o $(NAME) $(OBJ) $(CFLAGS) -g
+	gcc src/parsing.c -o $(NAME) $(OBJ) $(CFLAGS) -g
 
 exec_debug: debug
 	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all \

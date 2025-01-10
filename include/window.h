@@ -57,9 +57,11 @@ typedef struct window_s {
 } window_t;
 
 int my_strlen(char *str);
-void free_array(char **array);
+int my_arraylen(char **str);
+int free_array(char **array);
 int my_getnbr(char const *str);
 char *my_strdup(char const *src);
+int my_str_isnum(char const *str);
 int my_strcmp(char const *s1, char const *s2);
 char **my_str_to_word_array(char *s, char *delimiter);
 int open_window(char **array);
@@ -70,12 +72,12 @@ tower_t *init_tower(char **array, sfTexture *texture);
 aircraft_t *init_aircraft(char **array, sfTexture *texture);
 void parse_ac_to_infos(char **infos, window_t *w, sfTexture *ac_texture,
     sfTexture *to_texture);
-corner_t **parse_in_corners(aircraft_t **ac, int nb_ac, corner_t **corners);
+corner_t **parse_in_corners(window_t *w, int second);
 int ac_cmp(aircraft_t *ac1, aircraft_t *ac2);
-void is_arrived(window_t *w, aircraft_t *ac);
 void is_intersecting_ac(window_t *w, int j, int i);
-void display_sprites(window_t *w);
+void is_arrived(window_t *w, aircraft_t *ac);
 void display_boundaries(window_t *w);
-void my_destroy(window_t *w);
+void display_sprites(window_t *w);
+int my_destroy(window_t *w);
 
 #endif
