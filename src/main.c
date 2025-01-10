@@ -55,6 +55,8 @@ static int check_ac(char **array)
         if (!my_str_isnum(array[i]))
             return 1;
     }
+    if (my_getnbr(array[5]) < 0 || my_getnbr(array[6]) < 0)
+        return 1;
     return 0;
 }
 
@@ -120,9 +122,9 @@ int main(int argc, char **argv, char **env)
     if (!is_valid_script(array)) {
         write(2, "The script isn't well formated :\n", 33);
         write(2, "for aircrafts : \n'A' [departure x- and y-coordinates]", 53);
-        write(2, " [arrival x- and y-coordinates] speed delay\n", 44);
-        write(2, "for towers : \n'T' [tower x- and y-coordinates] ", 47);
-        write(2, "[radius of the tower's control area]", 36);
+        write(2, " [arrival x- and y-coordinates] (positive)speed ", 48);
+        write(2, "(positive)delay\nfor towers : \n'T' [tower x- and ", 48);
+        write(2, "y-coordinates] [radius of the tower's control area]\n", 52);
         return 84;
     }
     return open_window(array);
