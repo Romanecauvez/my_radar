@@ -119,8 +119,8 @@ int main(int argc, char **argv, char **env)
         return 84;
     if (!is_valid_script(array)) {
         write(2, "The script isn't well formated :\n", 33);
-        write(2, "for aircrafts : \n'A' [departure x- and y-coordinates] ", 54);
-        write(2, "[arrival x- and y-coordinates] speed delay\n", 43);
+        write(2, "for aircrafts : \n'A' [departure x- and y-coordinates]", 53);
+        write(2, " [arrival x- and y-coordinates] speed delay\n", 44);
         write(2, "for towers : \n'T' [tower x- and y-coordinates] ", 47);
         write(2, "[radius of the tower's control area]", 36);
         return 84;

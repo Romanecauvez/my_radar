@@ -8,8 +8,6 @@
 
 #ifndef WINDOW_H
     #define WINDOW_H
-    // #include <SFML/Graphics/RenderWindow.h>
-    // #include <SFML/Window/WindowBase.h>
     #include <SFML/Graphics/Color.h>
     #include <SFML/Window/Event.h>
     #include <SFML/Graphics.h>
