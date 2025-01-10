@@ -93,7 +93,18 @@ int is_valid_script(char **array)
     return 1;
 }
 
-int main(int argc, char **argv)
+int verif_env(char **env)
+{
+    for (int i = 0; env[i]; i++) {
+        if (my_strcmp(env[i], "XDG_SESSION_TYPE=tty") == 0) {
+            write(2, "Wrong environement\n", 19);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int main(int argc, char **argv, char **env)
 {
     char **array = NULL;
 
@@ -101,10 +112,18 @@ int main(int argc, char **argv)
         return 84;
     if (my_strcmp(argv[1], "-h") == 0)
         return print_h();
+    if (verif_env(env) == 0)
+        return 84;
     array = parse_args(argv[1]);
     if (!array)
         return 84;
-    if (!is_valid_script(array))
+    if (!is_valid_script(array)) {
+        write(2, "The script isn't well formated :\n", 33);
+        write(2, "for aircrafts : \n'A' [departure x- and y-coordinates] ", 54);
+        write(2, "[arrival x- and y-coordinates] speed delay\n", 43);
+        write(2, "for towers : \n'T' [tower x- and y-coordinates] ", 47);
+        write(2, "[radius of the tower's control area]", 36);
         return 84;
+    }
     return open_window(array);
 }

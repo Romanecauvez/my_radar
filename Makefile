@@ -40,7 +40,7 @@ bonus:	$(NAME) $(OBJ)
 debug:	$(NAME) $(OBJ)
 	gcc src/parsing.c -o $(NAME) $(OBJ) $(CFLAGS) -g
 
-exec_debug: debug
+exec_debug:
 	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all \
 		./$(NAME) lot_of_ac.rdr 2>vgcore.out
 

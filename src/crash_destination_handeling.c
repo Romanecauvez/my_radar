@@ -25,11 +25,25 @@ static void remove_aircraft(aircraft_t *ac, window_t *w)
 
 void is_arrived(window_t *w, aircraft_t *ac)
 {
-    if ((ac->a_pos.x >= ac->pos.x + ac->speed &&
-        ac->a_pos.x <= ac->pos.x - ac->speed) &&
-        (ac->a_pos.y >= ac->pos.y + ac->speed &&
-        ac->a_pos.y <= ac->pos.y - ac->speed)) {
-        remove_aircraft(ac, w);
+    if (ac->vector.x >= 0 && ac->vector.y >= 0) {
+        if ((ac->pos.x >= ac->a_pos.x &&
+            ac->pos.y >= ac->a_pos.y))
+            remove_aircraft(ac, w);
+    }
+    if (ac->vector.x <= 0 && ac->vector.y >= 0) {
+        if ((ac->pos.x <= ac->a_pos.x &&
+            ac->pos.y >= ac->a_pos.y))
+            remove_aircraft(ac, w);
+    }
+    if (ac->vector.x >= 0 && ac->vector.y <= 0) {
+        if ((ac->pos.x >= ac->a_pos.x &&
+            ac->pos.y <= ac->a_pos.y))
+            remove_aircraft(ac, w);
+    }
+    if (ac->vector.x <= 0 && ac->vector.y <= 0) {
+        if ((ac->pos.x <= ac->a_pos.x &&
+            ac->pos.y <= ac->a_pos.y))
+            remove_aircraft(ac, w);
     }
 }
 

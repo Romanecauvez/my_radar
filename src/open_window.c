@@ -106,6 +106,12 @@ int clock_handeling(sfClock *clock, window_t *w)
     sfTime elapsed = sfClock_getElapsedTime(clock);
 
     if (sfTime_asSeconds(elapsed) >= 1) {
+        for (int i = 0; w->corners[i]; i++) {
+            for (int j = 0; w->corners[i]->ac[j]; j++) {
+                // is_intersecting_ac(w, j, i);
+                is_arrived(w, w->corners[i]->ac[j]);
+            }
+        }
         second = convert_fps_seconds(is_malloc, &fps_str, &second_str, fps);
         fps = 0;
         sfClock_restart(clock);
@@ -128,7 +134,7 @@ int while_window_open(window_t *w, sfClock *clock)
     for (int i = 0; w->corners[i]; i++) {
         for (int j = 0; w->corners[i]->ac[j]; j++) {
             is_intersecting_ac(w, j, i);
-            is_arrived(w, w->corners[i]->ac[j]);
+            // is_arrived(w, w->corners[i]->ac[j]);
         }
     }
     second = clock_handeling(clock, w);
