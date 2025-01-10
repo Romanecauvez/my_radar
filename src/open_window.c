@@ -115,7 +115,6 @@ int clock_handeling(sfClock *clock, window_t *w)
 
     if (sfTime_asSeconds(elapsed) >= 1) {
         second = convert_fps_seconds(is_malloc, &fps_str, &second_str, fps);
-        fflush(stdout);
         fps = 0;
         sfClock_restart(clock);
     } else
