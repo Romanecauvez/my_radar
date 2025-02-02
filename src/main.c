@@ -97,6 +97,10 @@ int is_valid_script(char **array)
 
 int verif_env(char **env)
 {
+    if (!env) {
+        write(2, "No environement\n", 16);
+        return 0;
+    }
     for (int i = 0; env[i]; i++) {
         if (my_strcmp(env[i], "XDG_SESSION_TYPE=tty") == 0) {
             write(2, "Wrong environement\n", 19);
