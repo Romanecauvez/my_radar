@@ -6,6 +6,7 @@
 */
 
 #include "window.h"
+#include <stdio.h>
 
 int print_h(void)
 {
@@ -97,7 +98,7 @@ int is_valid_script(char **array)
 
 int verif_env(char **env)
 {
-    if (!env) {
+    if (!env || !env[0]) {
         write(2, "No environement\n", 16);
         return 0;
     }
