@@ -107,12 +107,14 @@ The pieces of information are separated by tabs or spaces.
 
 ## Installation
 
-If you haven't installed csfml yet, run:
+Dependencies:
 
-    ./install-csfml.sh
-Then run:
+[CSFML](https://www.sfml-dev.org/download/csfml/)
+
+Compilation:
 
     make
-And finally:
+
+Usage:
 
     ./my_radar <script>
