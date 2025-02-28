@@ -1,6 +1,6 @@
-![example_radar](/radar.png)
-# My Radar
 
+# My Radar
+![my_radar](radar.gif)
 ## Subject
 
 In this project, you are asked to render a 2D visualization panel showing a simulatation of air traffic (AT).
